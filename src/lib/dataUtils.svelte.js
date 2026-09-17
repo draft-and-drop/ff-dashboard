@@ -49,6 +49,15 @@ export const getFantasyCalcData = async () => {
  */
 export const getUserLeagues = async (username, fantasyCalcData) => {
   const SLEEPER_API = "https://api.sleeper.app/v1";
+  const currentDate = new Date();
+  let browserUTCYear = currentDate.getUTCFullYear();
+
+  // Each NFL season operates from sep-<year> to feb-<year+1>
+  // If current month is January through May (0-4), 
+  // we should use the previous year
+  if (currentDate.getUTCMonth() < 5) {
+    browserUTCYear -= 1;
+  }
 
   try {
     // Load the user object, throw on errors
@@ -58,7 +67,7 @@ export const getUserLeagues = async (username, fantasyCalcData) => {
     if (!userData) throw new Error(`This user does not exist.`);
 
     // Get the league IDs for the user, throw on errors
-    const leagueIDSRes = await fetch(SLEEPER_API + `/user/${userData.user_id}/leagues/nfl/2025`);
+    const leagueIDSRes = await fetch(SLEEPER_API + `/user/${userData.user_id}/leagues/nfl/${browserUTCYear}`);
     if (!leagueIDSRes.ok) throw new Error(`Status code: ${leagueIDSRes.status}`);
     const leagueIDS = await leagueIDSRes.json();
     if (!leagueIDS || leagueIDS.length === 0) throw new Error(`No leagues exist for this user.`);
